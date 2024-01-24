@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "O365Logs2LA": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7130",
+      "launchBrowser": false
+    }
+  }
+}
