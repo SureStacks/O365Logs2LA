@@ -12,15 +12,20 @@ namespace SureStacks.O365Logs2LA {
         private readonly ILogger _logger;
         private readonly string _hostname;
         private string? _tenantId;
+        private readonly bool _debug;
 
 
         public Office365ManagementApiService(IManagedIdentityTokenService managedIdentityTokenService, IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory) {
+            var debug = Environment.GetEnvironmentVariable("Debug");
+            if (debug is not null) {
+                _debug = true;
+            }
             // get logger
             _logger = loggerFactory.CreateLogger<Office365ManagementApiService>();
             // get website hostname from environment variable
             var hostname = Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME");
             if (string.IsNullOrEmpty(hostname)) {
-                _logger.LogError("WEBSITE_HOSTNAME environment variable not found.");
+                _logger.LogInformation("/!\\ WEBSITE_HOSTNAME environment variable not found.");
                 throw new Exception("WEBSITE_HOSTNAME environment variable not found.");
             }
             _hostname = hostname;
@@ -35,7 +40,7 @@ namespace SureStacks.O365Logs2LA {
         private async Task CheckAuth() {
             // get token from managed identity
             var token = await _managedIdentityTokenService.GetToken();
-            _logger.LogDebug($"Token: {token}");
+            if (_debug) _logger.LogInformation($"Token: {token}");
             // list current subscriptions from Office 365 Management API and this provider
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             // if tenant if is empty fill it from the token (jwt)
@@ -47,7 +52,7 @@ namespace SureStacks.O365Logs2LA {
                 _tenantId = jsonWebToken.Claims.First(c => c.Type == "tid").Value;
                 // check that tenant id is not empty
                 if (string.IsNullOrEmpty(_tenantId)) {
-                    _logger.LogError("Tenant ID not found in token.");
+                    _logger.LogInformation("/!\\ Tenant ID not found in token.");
                     throw new Exception("Tenant ID not found in token.");
                 }
                 // log tenant id
@@ -68,17 +73,17 @@ namespace SureStacks.O365Logs2LA {
                     var content = await response.Content.ReadAsStringAsync();
                     var error = JsonSerializer.Deserialize<ErrorResponse>(content);
                     if (error is not null) {
-                        _logger.LogError($"Error getting subscriptions: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                        _logger.LogInformation($"/!\\ Error getting subscriptions: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
                         throw new Exception($"Error getting subscriptions: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
                     }
                 } 
-                _logger.LogError($"Error getting subscriptions: {response.StatusCode}");
+                _logger.LogInformation($"/!\\ Error getting subscriptions: {response.StatusCode}");
                 throw new Exception($"Error getting subscriptions: {response.StatusCode}");
             }
             // return subscriptions from json
             var subscriptions = JsonSerializer.Deserialize<List<Subscription>>(await response.Content.ReadAsStringAsync());
             if (subscriptions is null) {
-                _logger.LogError("Error deserializing subscriptions.");
+                _logger.LogInformation("/!\\ Error deserializing subscriptions.");
                 throw new Exception("Error deserializing subscriptions.");
             }
             _logger.LogInformation($"Retrieved {subscriptions.Count} subscriptions.");
@@ -98,17 +103,17 @@ namespace SureStacks.O365Logs2LA {
                     var content = await response.Content.ReadAsStringAsync();
                     var error = JsonSerializer.Deserialize<ErrorResponse>(content);
                     if (error is not null) {
-                        _logger.LogError($"Error getting logs: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                        _logger.LogInformation($"/!\\ Error getting logs: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
                         throw new Exception($"Error getting logs: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
                     }
                 } 
-                _logger.LogError($"Error getting logs: {response.StatusCode}");
+                _logger.LogInformation($"/!\\ Error getting logs: {response.StatusCode}");
                 throw new Exception($"Error getting logs: {response.StatusCode}");
             }
             // return logs from json
             var logs = JsonSerializer.Deserialize<List<dynamic>>(await response.Content.ReadAsStringAsync());
             if (logs is null) {
-                _logger.LogError("Error deserializing logs.");
+                _logger.LogInformation("/!\\ Error deserializing logs.");
                 throw new Exception("Error deserializing logs.");
             }
             return logs;
@@ -128,30 +133,30 @@ namespace SureStacks.O365Logs2LA {
             var webhookJson = JsonSerializer.Serialize(createSub);
             // start a subscription for tenant, provider and content type using Office 365 Management API and webhook as body
             var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/start?contentType={ContentTypes.GetContentTypeString(contentType)}&PublisherIdentifier={ProviderUUID}", new StringContent(webhookJson, Encoding.UTF8, "application/json"));
-            _logger.LogDebug($"Request payload: {webhookJson}");
+            if (_debug) _logger.LogInformation($"Request payload: {webhookJson}");
             // check response
             if (!response.IsSuccessStatusCode) {
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
-                    _logger.LogDebug($"Response payload: {content}");
+                    if (_debug) _logger.LogInformation($"Response payload: {content}");
                     var error = JsonSerializer.Deserialize<ErrorResponse>(content);
                     if (error is not null) {
-                        _logger.LogError($"Error starting subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                        _logger.LogInformation($"/!\\ Error starting subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
                         throw new Exception($"Error starting subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
                     }
                 } 
-                _logger.LogError($"Error starting subscription: {response.StatusCode}");
+                _logger.LogInformation($"/!\\ Error starting subscription: {response.StatusCode}");
                 throw new Exception($"Error starting subscription: {response.StatusCode}");
             }
             // get subscription from json
             var subscription = JsonSerializer.Deserialize<Subscription>(await response.Content.ReadAsStringAsync());
             if (subscription is null) {
-                _logger.LogError("Error deserializing subscription.");
+                _logger.LogInformation("/!\\ Error deserializing subscription.");
                 throw new Exception("Error deserializing subscription.");
             }
             if (subscription.Status != "enabled") {
-                _logger.LogError($"Error new subscription not enabled: {subscription.Status}");
+                _logger.LogInformation($"/!\\ Error new subscription not enabled: {subscription.Status}");
                 throw new Exception($"Error new subscription not enabled: {subscription.Status}");
             }
             // log subscription started with current status, content type, webhook and webhook status
@@ -172,11 +177,11 @@ namespace SureStacks.O365Logs2LA {
                     var content = await response.Content.ReadAsStringAsync();
                     var error = JsonSerializer.Deserialize<ErrorResponse>(content);
                     if (error is not null) {
-                        _logger.LogError($"Error stopping subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                        _logger.LogInformation($"/!\\ Error stopping subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
                         throw new Exception($"Error stopping subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
                     }
                 } 
-                _logger.LogError($"Error stopping subscription: {response.StatusCode}");
+                _logger.LogInformation($"/!\\ Error stopping subscription: {response.StatusCode}");
                 throw new Exception($"Error stopping subscription: {response.StatusCode}");
             }
         }
