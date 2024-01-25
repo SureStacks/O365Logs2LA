@@ -1,6 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using SureStacks.O365Logs2LA;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
@@ -8,6 +9,9 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.AddHttpClient();
         services.ConfigureFunctionsApplicationInsights();
+        services.AddSingleton<IManagedIdentityTokenService, ManagedIdentityTokenService>();
+        services.AddSingleton<IOffice365ManagementApiService, Office365ManagementApiService>();
+        services.AddSingleton<ILogAnalyticsService, LogAnalyticsService>();
     })
     .Build();
 

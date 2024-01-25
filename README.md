@@ -1,6 +1,6 @@
 # O365Logs2LA
 
-Send Office 365 unified logs to log analytics with .Net and Managed Identities and optimise resources and security.
+Send Office 365 unified logs to log analytics with .Net and Managed Identities and optimize resources and security.
 
 There are already available samples and connectors to send Office 365 Unifed Logs to Log Analytics/Sentinel:
 
@@ -15,25 +15,22 @@ This project has two objectives:
 * Optimise resource usage by using a compiled language (.net)
 * Leverage modern authentication with Managed Identities and avoid Shared Key
 
-## High level Overview
+## High-level Overview
 
-The function app will collect logs every 5 minutes and send the logs to log Analytics.
-
-The DataConnector does use a storage account to store the last time logs where collected to handle cases where the function may have failed.
-
-In the present implementation we might rely on requesting the last timestamp of logs to determine an equivalent invormation.
-
-```ascii
+The function app will register a subscription to Office 365 Management API and be notified of log presence via a webhook.
 
 
------+        +------------+        +-----
-     |        |            |        |
-O365 |        |  Function  |        | Log
-Log  | <----> |    App     | <----> | Analytics
-API  |        | O365Log2LA |        | Workspace
-     |        |            |        |
------+        +------------+        +-----
-             Managed Identity
+```ascii  
+
+
+-----+                 +----------------------+                +-----
+     | <-------------- |                      |                |
+O365 |  1. subscribe   |     Function App     |                | Log
+Log  | --------------> |                      | =============> | Analytics
+API  |   2. webhook    |      O365Log2LA      |  4. send logs  | Workspace
+     | <============== |                      |                |
+-----+ 3. get content  +----------------------+                +-----
+                         🔑 Managed Identity
 ```
 
 The permissions needed for the managed identity are:
@@ -42,4 +39,4 @@ The permissions needed for the managed identity are:
    * ActivityFeed.Read
    * ActivityFeed.ReadDlp
  * Log Analytics Workspace
-   * [TO CHECK]
+   * Log Analytics Contributor
