@@ -80,6 +80,7 @@ namespace SureStacks.O365Logs2LA {
                 _logger.LogError("Error deserializing subscriptions.");
                 throw new Exception("Error deserializing subscriptions.");
             }
+            _logger.LogInformation($"Retrieved {subscriptions.Count} subscriptions.");
             return subscriptions;
         }
 
