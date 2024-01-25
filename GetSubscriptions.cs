@@ -33,10 +33,10 @@ namespace SureStacks.O365Logs2LA
             }
 
             // put subscriptionsSimple into a json string
-            var subscriptionsSimpleJson = JsonSerializer.Serialize(subscriptions);
+            var subscriptionsJson = JsonSerializer.Serialize(subscriptions);
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-            await response.WriteStringAsync(subscriptionsSimpleJson);
+            await response.WriteStringAsync(subscriptionsJson);
             return response;
         }
     }
