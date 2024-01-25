@@ -56,7 +56,7 @@ namespace SureStacks.O365Logs2LA
 
         public async Task CheckSubscriptionFunc()
         {
-            _logger.LogInformation($"Checking Subscriptions: {DateTime.Now}");
+            _logger.LogInformation($"Checking Subscriptions.");
 
             // get subscriptions
             var subscriptions = await _office365ManagementApiService.GetSubscriptions();

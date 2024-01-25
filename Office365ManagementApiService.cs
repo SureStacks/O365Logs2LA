@@ -121,7 +121,7 @@ namespace SureStacks.O365Logs2LA {
                 Address = $"https://{_hostname}/api/content"
             };
             // start a subscription for tenant, provider and content type using Office 365 Management API and webhook as body
-            var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/start?contentType={contentType}&PublisherIdentifier={ProviderUUID}", new StringContent(JsonSerializer.Serialize(webhook), Encoding.UTF8, "application/json"));
+            var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/start?contentType={ContentTypes.GetContentTypeString(contentType)}&PublisherIdentifier={ProviderUUID}", new StringContent(JsonSerializer.Serialize(webhook), Encoding.UTF8, "application/json"));
             // check response
             if (!response.IsSuccessStatusCode) {
                 // check if content and get error from json ErrorResult object
@@ -156,7 +156,7 @@ namespace SureStacks.O365Logs2LA {
             // check auth
             await CheckAuth();
             // stop a subscription for tenant, provider and content type using Office 365 Management API
-            var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/stop?contentType={contentType}&PublisherIdentifier={ProviderUUID}", null);
+            var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/stop?contentType={ContentTypes.GetContentTypeString(contentType)}&PublisherIdentifier={ProviderUUID}", null);
             // check response
             if (!response.IsSuccessStatusCode) {
                 // check if content and get error from json ErrorResult object
