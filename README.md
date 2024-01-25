@@ -15,6 +15,8 @@ This project has two objectives:
 * Optimise resource usage by using a compiled language (.net)
 * Leverage modern authentication with Managed Identities and avoid Shared Key
 
+> ⚠️ Remember that you'll unified audit logs enabled on your tenant to retrieve those.
+
 ## High-level Overview
 
 The function app will register a subscription to Office 365 Management API and be notified of log presence via a webhook.

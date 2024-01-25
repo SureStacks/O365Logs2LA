@@ -119,11 +119,13 @@ namespace SureStacks.O365Logs2LA {
             // check auth
             await CheckAuth();
             // create a new webhook for the subscription
-            var webhook = new Webhook {
-                Address = $"https://{_hostname}/api/content"
+            var createSub = new Subscription {
+                Webhook = new Webhook {
+                    Address = $"https://{_hostname}/api/content"
+                }
             };
             // serialize webhook to json
-            var webhookJson = JsonSerializer.Serialize(webhook);
+            var webhookJson = JsonSerializer.Serialize(createSub);
             // start a subscription for tenant, provider and content type using Office 365 Management API and webhook as body
             var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/start?contentType={ContentTypes.GetContentTypeString(contentType)}&PublisherIdentifier={ProviderUUID}", new StringContent(webhookJson, Encoding.UTF8, "application/json"));
             _logger.LogDebug($"Request payload: {webhookJson}");

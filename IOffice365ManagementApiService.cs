@@ -9,8 +9,8 @@ namespace SureStacks.O365Logs2LA {
     }
 
     public class Subscription {
-        public required string ContentType { get; set; }
-        public required string Status { get; set; }
+        public string? ContentType { get; set; }
+        public string? Status { get; set; }
         public required Webhook Webhook { get; set; }
     }
 
@@ -28,7 +28,7 @@ namespace SureStacks.O365Logs2LA {
 
     public class Error {
         public required string Code { get; set; }
-        public required string Message { get; set; }
+        public string? Message { get; set; }
     }
 
     public class ErrorResponse {
