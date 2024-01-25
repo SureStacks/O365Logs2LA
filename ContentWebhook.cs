@@ -34,7 +34,7 @@ namespace SureStacks.O365Logs2LA
         }
 
         [Function("Webhook")]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "/content")] HttpRequestData req)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "content")] HttpRequestData req)
         {
             _logger.LogInformation("Subscription Content Webhook.");
 
