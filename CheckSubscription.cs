@@ -1,6 +1,9 @@
 using System;
+using System.Net;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
 namespace SureStacks.O365Logs2LA
@@ -51,12 +54,14 @@ namespace SureStacks.O365Logs2LA
                         break;
                 }
             }
-            CheckSubscriptionFunc().GetAwaiter().GetResult();
         }
 
-        public async Task CheckSubscriptionFunc()
+        public async Task<List<Subscription>> CheckSubscriptionFunc()
         {
             _logger.LogInformation($"Checking Subscriptions.");
+
+            // initialize subscriptions
+            var newSubscriptions = new List<Subscription>();
 
             // get subscriptions
             var subscriptions = await _office365ManagementApiService.GetSubscriptions();
@@ -70,9 +75,12 @@ namespace SureStacks.O365Logs2LA
                 if ((subscription is null) || (string.Compare(subscription.Status,"enabled",true) != 0))
                 {
                     _logger.LogInformation($"Subscribing to {logType}");
-                    await _office365ManagementApiService.StartSubscription(logType);
+                    newSubscriptions.Add(await _office365ManagementApiService.StartSubscription(logType));
                 }
             }
+
+            // return new subscriptions
+            return newSubscriptions;
         }
 
         [Function("CheckSubscription")]
@@ -85,6 +93,20 @@ namespace SureStacks.O365Logs2LA
             {
                 _logger.LogInformation($"Next SubscriptionCheck at: {myTimer.ScheduleStatus.Next}");
             }
+        }
+
+        [Function("Subscribe")]
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+        {
+            // get new subscriptions
+            var newSubscriptions = await CheckSubscriptionFunc();
+
+            // put subscriptionsSimple into a json string
+            var subscriptionsJson = JsonSerializer.Serialize(newSubscriptions);
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "application/json; charset=utf-8");
+            await response.WriteStringAsync(subscriptionsJson);
+            return response;
         }
     }
 }

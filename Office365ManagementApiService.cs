@@ -35,6 +35,7 @@ namespace SureStacks.O365Logs2LA {
         private async Task CheckAuth() {
             // get token from managed identity
             var token = await _managedIdentityTokenService.GetToken();
+            _logger.LogDebug($"Token: {token}");
             // list current subscriptions from Office 365 Management API and this provider
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             // if tenant if is empty fill it from the token (jwt)
@@ -121,13 +122,17 @@ namespace SureStacks.O365Logs2LA {
             var webhook = new Webhook {
                 Address = $"https://{_hostname}/api/content"
             };
+            // serialize webhook to json
+            var webhookJson = JsonSerializer.Serialize(webhook);
             // start a subscription for tenant, provider and content type using Office 365 Management API and webhook as body
-            var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/start?contentType={ContentTypes.GetContentTypeString(contentType)}&PublisherIdentifier={ProviderUUID}", new StringContent(JsonSerializer.Serialize(webhook), Encoding.UTF8, "application/json"));
+            var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/start?contentType={ContentTypes.GetContentTypeString(contentType)}&PublisherIdentifier={ProviderUUID}", new StringContent(webhookJson, Encoding.UTF8, "application/json"));
+            _logger.LogDebug($"Request payload: {webhookJson}");
             // check response
             if (!response.IsSuccessStatusCode) {
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
+                    _logger.LogDebug($"Response payload: {content}");
                     var error = JsonSerializer.Deserialize<ErrorResponse>(content);
                     if (error is not null) {
                         _logger.LogError($"Error starting subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
