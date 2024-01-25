@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -30,23 +32,11 @@ namespace SureStacks.O365Logs2LA
                 return req.CreateResponse(HttpStatusCode.NotFound);
             }
 
-            // simplify subscirptions to know just the content type, state and webhook state
-            var subscriptionsSimple = new List<dynamic>();
-            foreach (var subscription in subscriptions)
-            {
-                subscriptionsSimple.Add(new
-                {
-                    ContentType = subscription.ContentType,
-                    State = subscription.Status,
-                    WebhookState = subscription.Webhook?.Status
-                });
-            }
-
+            // put subscriptionsSimple into a json string
+            var subscriptionsSimpleJson = JsonSerializer.Serialize(subscriptions);
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-
-            await response.WriteAsJsonAsync(subscriptionsSimple);
-
+            await response.WriteStringAsync(subscriptionsSimpleJson);
             return response;
         }
     }
