@@ -96,7 +96,7 @@ namespace SureStacks.O365Logs2LA
         }
 
         [Function("Subscribe")]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+        public async Task<HttpResponseData> Subscribe([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
             // get new subscriptions
             var newSubscriptions = await CheckSubscriptionFunc();
