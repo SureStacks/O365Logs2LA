@@ -40,3 +40,31 @@ The permissions needed for the managed identity are:
    * ActivityFeed.ReadDlp
  * Log Analytics Workspace
    * Log Analytics Contributor
+
+## Granting Permissions to Office 365 Management APIs via PowerShell
+
+```PowerShell
+# Install the required module
+Install-Module -Name PowerShellGet -Force -AllowClobber
+Install-Module -Name MSAL.PS, Microsoft.Graph.Authentication -Force
+
+# Connect to Azure AD
+$TenantID = "<Your Tenant ID>"
+Connect-MgGraph -TenantId $TenantID -Scopes "Application.ReadWrite.All", "DelegatedPermissionGrant.ReadWrite.All"
+
+# Get the service principal for the managed identity
+$ManagedIdentityId = "<Your Managed Identity ID>"
+$ServicePrincipal = Get-MgServicePrincipal -Filter "id eq '$ManagedIdentityId'"
+
+# Get the service principal for the Office 365 Management APIs
+$Office365APIId = "c5393580-f805-4401-95e8-94b7a6ef2fc2" # This is the standard Application ID for the Office 365 Management APIs
+$Office365API = Get-MgServicePrincipal -Filter "appId eq '$Office365APIId'"
+
+# Get the specific permissions from the Office 365 Management APIs service principal
+$Permissions = $Office365API.AppRoles | Where-Object { $_.Value -in ('ActivityFeed.Read','ActivityFeed.ReadDlp') }
+
+# Assign the permissions to the managed identity
+$Permissions | ForEach-Object {
+     New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $ServicePrincipal.Id -AppRoleId $_.Id -PrincipalId $ServicePrincipal.Id -ResourceId $Office365API.Id
+}
+```
