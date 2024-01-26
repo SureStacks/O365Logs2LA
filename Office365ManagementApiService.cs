@@ -93,7 +93,9 @@ namespace SureStacks.O365Logs2LA {
             // return subscriptions from json
             List<Subscription>? subscriptions = null;
             try {
-                subscriptions = JsonSerializer.Deserialize<List<Subscription>>(await response.Content.ReadAsStringAsync());
+                var content = await response.Content.ReadAsStringAsync();
+                if (_debug) _logger.LogInformation($"Response payload: {content}");
+                subscriptions = JsonSerializer.Deserialize<List<Subscription>>(content, _jsonOptions);
             } catch (Exception e){
                 _logger.LogInformation($"/!\\ Error deserializing subscriptions: {e.Message}");
                 throw new Exception("Error deserializing subscriptions: {e.Message}");
@@ -102,7 +104,12 @@ namespace SureStacks.O365Logs2LA {
                 _logger.LogInformation("/!\\ Error deserializing subscriptions.");
                 throw new Exception("Error deserializing subscriptions.");
             }
-            _logger.LogInformation($"Retrieved {subscriptions.Count} subscriptions.");
+            // log subscriptions
+            if (_debug) foreach (var subscription in subscriptions)
+            {
+                _logger.LogInformation($"Subscription: {subscription.ContentType}: {subscription.Status} => {subscription.Webhook?.Address}: {subscription.Webhook?.Status}");
+            }
+            _logger.LogInformation($"Retrieved {subscriptions.Count} subscription(s).");
             return subscriptions;
         }
 

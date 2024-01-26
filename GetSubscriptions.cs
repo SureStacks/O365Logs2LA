@@ -12,6 +12,11 @@ namespace SureStacks.O365Logs2LA
         private readonly ILogger _logger;
         private readonly IOffice365ManagementApiService _office365ManagementApiService;
 
+        private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web){
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
+
         public GetSubscriptions(ILoggerFactory loggerFactory, IOffice365ManagementApiService office365ManagementApiService)
         {
             _logger = loggerFactory.CreateLogger<GetSubscriptions>();
@@ -33,7 +38,7 @@ namespace SureStacks.O365Logs2LA
             }
 
             // put subscriptionsSimple into a json string
-            var subscriptionsJson = JsonSerializer.Serialize(subscriptions);
+            var subscriptionsJson = JsonSerializer.Serialize(subscriptions, _jsonOptions);
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "application/json; charset=utf-8");
             await response.WriteStringAsync(subscriptionsJson);
