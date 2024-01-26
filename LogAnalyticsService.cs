@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -55,6 +56,10 @@ namespace SureStacks.O365Logs2LA {
             HttpResponseMessage response = await _httpClient.PostAsync(_logAnalyticsUrl, content);
 
             if (!response.IsSuccessStatusCode) {
+                // if unauthorized invalidate the token
+                if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                    await _tokenService.InvalidateToken("monitor.azure.com").ConfigureAwait(false);
+                }
                 _logger.LogError($"Failed to send log. Status code: {response.StatusCode}");
                 throw new Exception($"Failed to send log. Status code: {response.StatusCode}");
             }

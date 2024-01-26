@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -74,6 +75,10 @@ namespace SureStacks.O365Logs2LA {
             var response = await _httpClient.GetAsync(URI);
             // check response
             if (!response.IsSuccessStatusCode) {
+                // if unauthorized invalidate the token
+                if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                    await _managedIdentityTokenService.InvalidateToken().ConfigureAwait(false);
+                }
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
@@ -125,6 +130,10 @@ namespace SureStacks.O365Logs2LA {
             var response = await _httpClient.GetAsync(URI);
             // check response
             if (!response.IsSuccessStatusCode) {
+                // if unauthorized invalidate the token
+                if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                    await _managedIdentityTokenService.InvalidateToken().ConfigureAwait(false);
+                }
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
@@ -170,6 +179,10 @@ namespace SureStacks.O365Logs2LA {
             if (_debug) _logger.LogInformation($"Request payload: {webhookJson}");
             // check response
             if (!response.IsSuccessStatusCode) {
+                // if unauthorized invalidate the token
+                if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                    await _managedIdentityTokenService.InvalidateToken().ConfigureAwait(false);
+                }
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
@@ -208,13 +221,23 @@ namespace SureStacks.O365Logs2LA {
             var response = await _httpClient.PostAsync(URI, null);
             // check response
             if (!response.IsSuccessStatusCode) {
+                // if unauthorized invalidate the token
+                if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                    await _managedIdentityTokenService.InvalidateToken().ConfigureAwait(false);
+                }
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
-                    var error = JsonSerializer.Deserialize<ErrorResponse>(content);
-                    if (error is not null) {
-                        _logger.LogInformation($"/!\\ Error stopping subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
-                        throw new Exception($"Error stopping subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                    try {
+                        var error = JsonSerializer.Deserialize<ErrorResponse>(content);
+                        if (error is not null) {
+                            _logger.LogInformation($"/!\\ Error stopping subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                            throw new Exception($"Error stopping subscription: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                        }
+                    } catch {
+                        _logger.LogInformation($"/!\\ Error stopping subscription: {response.StatusCode}");
+                        throw new Exception($"Error stopping subscription: {response.StatusCode}");
+                    
                     }
                 } 
                 _logger.LogInformation($"/!\\ Error stopping subscription: {response.StatusCode}");

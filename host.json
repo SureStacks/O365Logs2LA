@@ -3,7 +3,8 @@
     "logging": {
         "logLevel": {
             "default": "Information",
-            "Function": "Debug"
+            "Function": "Debug",
+            "System.Net.Http.HttpClient": "Warning"
         },
         "ApplicationInsights": {
             "samplingSettings": {
