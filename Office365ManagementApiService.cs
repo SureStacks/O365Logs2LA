@@ -75,6 +75,7 @@ namespace SureStacks.O365Logs2LA {
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
+                    if (_debug) _logger.LogInformation($"Response payload: {content}");
                     try {
                         var error = JsonSerializer.Deserialize<ErrorResponse>(content);
                         if (error is not null) {
@@ -90,7 +91,13 @@ namespace SureStacks.O365Logs2LA {
                 throw new Exception($"Error getting subscriptions: {response.StatusCode}");
             }
             // return subscriptions from json
-            var subscriptions = JsonSerializer.Deserialize<List<Subscription>>(await response.Content.ReadAsStringAsync());
+            List<Subscription>? subscriptions = null;
+            try {
+                subscriptions = JsonSerializer.Deserialize<List<Subscription>>(await response.Content.ReadAsStringAsync());
+            } catch (Exception e){
+                _logger.LogInformation($"/!\\ Error deserializing subscriptions: {e.Message}");
+                throw new Exception("Error deserializing subscriptions: {e.Message}");
+            }
             if (subscriptions is null) {
                 _logger.LogInformation("/!\\ Error deserializing subscriptions.");
                 throw new Exception("Error deserializing subscriptions.");

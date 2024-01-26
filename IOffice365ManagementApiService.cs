@@ -11,7 +11,7 @@ namespace SureStacks.O365Logs2LA {
     public class Subscription {
         public string? ContentType { get; set; }
         public string? Status { get; set; }
-        public required Webhook Webhook { get; set; }
+        public Webhook? Webhook { get; set; }
     }
 
     public class Logs {
