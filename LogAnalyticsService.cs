@@ -13,6 +13,10 @@ namespace SureStacks.O365Logs2LA {
         private readonly ILogger<LogAnalyticsService> _logger;
         private readonly HttpClient _httpClient;
         private readonly string _logAnalyticsUrl;
+        private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web){
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
 
         public LogAnalyticsService(IManagedIdentityTokenService tokenService, ILogger<LogAnalyticsService> logger, IHttpClientFactory httpClientFactory)
         {
@@ -46,7 +50,7 @@ namespace SureStacks.O365Logs2LA {
             _httpClient.DefaultRequestHeaders.Add("Log-Type", contentType.Replace(".", "_") + "_CL");
 
             // create string content from logs
-            var content = new StringContent(JsonSerializer.Serialize(logs));
+            var content = new StringContent(JsonSerializer.Serialize(logs, _jsonOptions));
 
             HttpResponseMessage response = await _httpClient.PostAsync(_logAnalyticsUrl, content);
 

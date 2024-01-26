@@ -13,6 +13,10 @@ namespace SureStacks.O365Logs2LA {
         private readonly string _hostname;
         private string? _tenantId;
         private readonly bool _debug;
+        private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web){
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
 
 
         public Office365ManagementApiService(IManagedIdentityTokenService managedIdentityTokenService, IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory) {
@@ -130,7 +134,7 @@ namespace SureStacks.O365Logs2LA {
                 }
             };
             // serialize webhook to json
-            var webhookJson = JsonSerializer.Serialize(createSub);
+            var webhookJson = JsonSerializer.Serialize(createSub, _jsonOptions);
             // start a subscription for tenant, provider and content type using Office 365 Management API and webhook as body
             var response = await _httpClient.PostAsync($"https://manage.office.com/api/v1.0/{_tenantId}/activity/feed/subscriptions/start?contentType={ContentTypes.GetContentTypeString(contentType)}&PublisherIdentifier={ProviderUUID}", new StringContent(webhookJson, Encoding.UTF8, "application/json"));
             if (_debug) _logger.LogInformation($"Request payload: {webhookJson}");
