@@ -75,10 +75,15 @@ namespace SureStacks.O365Logs2LA {
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
-                    var error = JsonSerializer.Deserialize<ErrorResponse>(content);
-                    if (error is not null) {
-                        _logger.LogInformation($"/!\\ Error getting subscriptions: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
-                        throw new Exception($"Error getting subscriptions: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                    try {
+                        var error = JsonSerializer.Deserialize<ErrorResponse>(content);
+                        if (error is not null) {
+                            _logger.LogInformation($"/!\\ Error getting subscriptions: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                            throw new Exception($"Error getting subscriptions: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                        }
+                    } catch {
+                        _logger.LogInformation($"/!\\ Error getting subscriptions: {response.StatusCode}");
+                        throw new Exception($"Error getting subscriptions: {response.StatusCode}");
                     }
                 } 
                 _logger.LogInformation($"/!\\ Error getting subscriptions: {response.StatusCode}");
@@ -105,10 +110,15 @@ namespace SureStacks.O365Logs2LA {
                 // check if content and get error from json ErrorResult object
                 if (response.Content is not null) {
                     var content = await response.Content.ReadAsStringAsync();
-                    var error = JsonSerializer.Deserialize<ErrorResponse>(content);
-                    if (error is not null) {
-                        _logger.LogInformation($"/!\\ Error getting logs: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
-                        throw new Exception($"Error getting logs: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                    try {
+                        var error = JsonSerializer.Deserialize<ErrorResponse>(content);
+                        if (error is not null) {
+                            _logger.LogInformation($"/!\\ Error getting logs: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                            throw new Exception($"Error getting logs: {error.Error.Message} - {error.Error.Code} - {response.StatusCode}");
+                        }
+                    } catch {
+                        _logger.LogInformation($"/!\\ Error getting logs: {response.StatusCode}");
+                        throw new Exception($"Error getting logs: {response.StatusCode}");
                     }
                 } 
                 _logger.LogInformation($"/!\\ Error getting logs: {response.StatusCode}");
