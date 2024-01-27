@@ -23,8 +23,13 @@ The function app will register a subscription to Office 365 Management API and b
 
 
 ```ascii  
-
-
+                      | Key Vault (Secret)     |           
+                      | - Log Analytics        |<- - - - - - - - +
+                      |   Workspace Shared Key |                 
+                      +------------------------+                 |
+                                  ^
+                                  | App Setting                  | 
+                                  |
 -----+                 +----------------------+                +-----
      | <-------------- |                      |                |
 O365 |  1. subscribe   |     Function App     |                | Log

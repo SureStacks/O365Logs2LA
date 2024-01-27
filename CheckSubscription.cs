@@ -35,7 +35,7 @@ namespace SureStacks.O365Logs2LA
             {  
                 var contentType = ContentTypes.GetContentTypeEnum(logType);
                 if (contentType != null) {
-                    _logTypes.Add((ContentTypes.ContentType)contentType);
+                    _logTypes.Add(contentType);
                 } else {
                     _logger.LogError($"Check: LogType {logType} is not a valid ContentTypes.ContentType.");
                 }
