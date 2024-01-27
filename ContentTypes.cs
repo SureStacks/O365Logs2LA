@@ -28,5 +28,24 @@ namespace SureStacks.O365Logs2LA {
                     throw new ArgumentException($"Invalid content type: {contentType}");
             }
         }
+
+        public static ContentType GetContentTypeEnum(string contentType)
+        {
+            switch (contentType)
+            {
+                case "Audit.AzureActiveDirectory":
+                    return ContentType.Audit_AzureActiveDirectory;
+                case "Audit.Exchange":
+                    return ContentType.Audit_Exchange;
+                case "Audit.SharePoint":
+                    return ContentType.Audit_SharePoint;
+                case "Audit.General":
+                    return ContentType.Audit_General;
+                case "DLP.All":
+                    return ContentType.DLP_All;
+                default:
+                    throw new ArgumentException($"Invalid content type: {contentType}");
+            }
+        }
     }
 }

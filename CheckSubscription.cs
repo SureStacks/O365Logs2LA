@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Net.Mime;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Azure.Functions.Worker;
@@ -32,26 +33,11 @@ namespace SureStacks.O365Logs2LA
             _logTypes = new List<ContentTypes.ContentType>();
             foreach (var logType in logTypesList)
             {  
-                switch (logType)
-                {
-                    case "Audit.AzureActiveDirectory":
-                        _logTypes.Add(ContentTypes.ContentType.Audit_AzureActiveDirectory);
-                        break;
-                    case "Audit.Exchange":
-                        _logTypes.Add(ContentTypes.ContentType.Audit_Exchange);
-                        break;
-                    case "Audit.SharePoint":
-                        _logTypes.Add(ContentTypes.ContentType.Audit_SharePoint);
-                        break;
-                    case "Audit.General":
-                        _logTypes.Add(ContentTypes.ContentType.Audit_General);
-                        break;
-                    case "DLP.All":
-                        _logTypes.Add(ContentTypes.ContentType.DLP_All);
-                        break;
-                    default:
-                        _logger.LogError($"Invalid log type: {logType}");
-                        break;
+                var contentType = ContentTypes.GetContentTypeEnum(logType);
+                if (contentType != null) {
+                    _logTypes.Add((ContentTypes.ContentType)contentType);
+                } else {
+                    _logger.LogError($"Check: LogType {logType} is not a valid ContentTypes.ContentType.");
                 }
             }
         }
@@ -87,9 +73,10 @@ namespace SureStacks.O365Logs2LA
                 // if there is no log type for the subscription stop it
                 if (!isNeeded)
                 {
-                    var logType = _logTypes.FirstOrDefault(l => ContentTypes.GetContentTypeString(l) == subscription.ContentType);
-                    _logger.LogInformation($"Check: Unsubscribing from {subscription}");
-                    await _office365ManagementApiService.StopSubscription(logType);
+                    if (string.Compare(subscription.Status,"enabled",true) == 0 && !string.IsNullOrEmpty(subscription.ContentType)) {
+                        _logger.LogInformation($"Check: Unsubscribing from {subscription}");
+                        await _office365ManagementApiService.StopSubscription(ContentTypes.GetContentTypeEnum(subscription.ContentType));
+                    }
                 }
             }
 
