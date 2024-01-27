@@ -90,9 +90,11 @@ namespace SureStacks.O365Logs2LA {
             
 
             // create string content from logs
-            var content = new StringContent(JsonSerializer.Serialize(logs, _jsonOptions));
+            var logsJson = JsonSerializer.Serialize(logs, _jsonOptions);
             // log content if debug
-            if (_debug) _logger.LogInformation($"LA: Request payload: {content}");
+            if (_debug) _logger.LogInformation($"LA: Request payload: {logsJson}");
+            // create content
+            var content = new StringContent(logsJson);
             // set request content
             request.Content = content;
             // set content type header
