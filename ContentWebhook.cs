@@ -33,7 +33,7 @@ namespace SureStacks.O365Logs2LA
             _logAnalyticsService = logAnalyticsService;
         }
 
-        [Function("Webhook")]
+        [Function("Content")]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "content")] HttpRequestData req)
         {
             _logger.LogInformation("Subscription Content Webhook.");

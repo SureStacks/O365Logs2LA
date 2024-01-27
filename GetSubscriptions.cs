@@ -23,8 +23,8 @@ namespace SureStacks.O365Logs2LA
             _office365ManagementApiService = office365ManagementApiService;
         }
 
-        [Function("GetSubscriptions")]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+        [Function("Subscriptions")]
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "subscriptions")] HttpRequestData req)
         {
             _logger.LogInformation("Getting Subscriptions.");
 
