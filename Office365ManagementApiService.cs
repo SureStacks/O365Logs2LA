@@ -114,7 +114,7 @@ namespace SureStacks.O365Logs2LA {
             // log subscriptions
             if (_debug) foreach (var subscription in subscriptions)
             {
-                _logger.LogInformation($"Subscription: {subscription.ContentType}: {subscription.Status} => {subscription.Webhook?.Address}: {subscription.Webhook?.Status}");
+                _logger.LogInformation($"Subscription: {subscription}");
             }
             _logger.LogInformation($"Retrieved {subscriptions.Count} subscription(s).");
             return subscriptions;
@@ -203,11 +203,10 @@ namespace SureStacks.O365Logs2LA {
                 throw new Exception("Error deserializing subscription.");
             }
             if (subscription.Status != "enabled") {
-                _logger.LogInformation($"/!\\ Error new subscription not enabled: {subscription.Status}");
-                throw new Exception($"Error new subscription not enabled: {subscription.Status}");
+                _logger.LogInformation($"/!\\ Warning new subscription not enabled: '{subscription.Status}'");
             }
             // log subscription started with current status, content type, webhook and webhook status
-            _logger.LogInformation($"Subscription started: {subscription.Status} - {subscription.ContentType} - {subscription.Webhook.Address} - {subscription.Webhook.Status}");
+            _logger.LogInformation($"Subscription started: {subscription}");
             return subscription;
         }
 

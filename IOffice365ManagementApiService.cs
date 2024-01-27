@@ -12,6 +12,13 @@ namespace SureStacks.O365Logs2LA {
         public string? ContentType { get; set; }
         public string? Status { get; set; }
         public Webhook? Webhook { get; set; }
+
+        // implement a conversion to string
+        public override string ToString() {
+            var status = Status ?? "notvalidated";
+            var webhookStatus = Webhook?.Status ?? "notvalidated";
+            return $"Subscription started: {ContentType}:  '{status}' =>  {Webhook?.Address}: '{webhookStatus}'";
+        }
     }
 
     public class Logs {
