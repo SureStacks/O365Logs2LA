@@ -87,6 +87,7 @@ namespace SureStacks.O365Logs2LA
                 // if there is no log type for the subscription stop it
                 if (!isNeeded)
                 {
+                    var logType = _logTypes.FirstOrDefault(l => ContentTypes.GetContentTypeString(l) == subscription.ContentType);
                     _logger.LogInformation($"Check: Unsubscribing from {subscription}");
                     await _office365ManagementApiService.StopSubscription(logType);
                 }
