@@ -197,7 +197,9 @@ namespace SureStacks.O365Logs2LA {
                 throw new Exception($"Error starting subscription: {response.StatusCode}");
             }
             // get subscription from json
-            var subscription = JsonSerializer.Deserialize<Subscription>(await response.Content.ReadAsStringAsync());
+            var content = await response.Content.ReadAsStringAsync();
+            if (_debug) _logger.LogInformation($"Response payload: {content}");
+            var subscription = JsonSerializer.Deserialize<Subscription>(content);
             if (subscription is null) {
                 _logger.LogInformation("/!\\ Error deserializing subscription.");
                 throw new Exception("Error deserializing subscription.");

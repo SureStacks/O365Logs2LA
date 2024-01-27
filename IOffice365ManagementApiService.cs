@@ -17,7 +17,7 @@ namespace SureStacks.O365Logs2LA {
         public override string ToString() {
             var status = Status ?? "notvalidated";
             var webhookStatus = Webhook?.Status ?? "notvalidated";
-            return $"Subscription started: {ContentType}:  '{status}' =>  {Webhook?.Address}: '{webhookStatus}'";
+            return $"{ContentType}:  '{status}' =>  {Webhook?.Address}: '{webhookStatus}'";
         }
     }
 
