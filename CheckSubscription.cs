@@ -79,6 +79,19 @@ namespace SureStacks.O365Logs2LA
                 }
             }
 
+            // check that subscriptions are from required content types otherwise stop them
+            foreach (var subscription in subscriptions)
+            {
+                // check if there is a log type for the subscription
+                var isNeeded = _logTypes.Any(l => ContentTypes.GetContentTypeString(l) == subscription.ContentType);
+                // if there is no log type for the subscription stop it
+                if (!isNeeded)
+                {
+                    _logger.LogInformation($"Check: Unsubscribing from {subscription}");
+                    await _office365ManagementApiService.StopSubscription(logType);
+                }
+            }
+
             // return new subscriptions
             return newSubscriptions;
         }
