@@ -51,4 +51,10 @@ jobs:
           app-name: 'surestackso365logs'
           slot-name: 'Production'
           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+
+      - name: 'Wait and do subscribe function on azure function'
+        shell: bash
+        run: |
+          sleep 60
+          curl -X POST https://surestackso365logs.azurewebsites.net/api/subscribe
           
