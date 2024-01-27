@@ -15,10 +15,10 @@ namespace SureStacks.O365Logs2LA
         {
             _logger = loggerFactory.CreateLogger<ManagedIdentityTokenService>();
             // add a token to cache for manage.office.com
-            _logger.LogInformation($"Retrieving new token for 'manage.office.com'.");
+            _logger.LogInformation($"Auth: Getting new token for 'manage.office.com'.");
             _tokenCache.Add("manage.office.com", RawGetToken("manage.office.com"));
             // add a token to cache for monitor.azure.com
-            _logger.LogInformation($"Retrieving new token for 'monitor.azure.com'.");
+            _logger.LogInformation($"Auth: Getting new token for 'monitor.azure.com'.");
             _tokenCache.Add("monitor.azure.com", RawGetToken("monitor.azure.com"));
         }
         
@@ -38,7 +38,7 @@ namespace SureStacks.O365Logs2LA
         {
             // get the token from cache
             if (!_tokenCache.TryGetValue(resource, out var token)) {
-                _logger.LogInformation($"Retrieving new token for '{resource}'.");
+                _logger.LogInformation($"Auth: Retrieving new token for '{resource}'.");
                 // get a new token
                 token = await RawGetTokenAsync(resource);
                 // add the token to cache
@@ -50,7 +50,7 @@ namespace SureStacks.O365Logs2LA
             // Check if the token is expired
             if (jsonWebToken.ValidTo < DateTime.UtcNow.AddMinutes(-10))
             {
-                _logger.LogInformation($"Refreshing token for '{resource}'.");
+                _logger.LogInformation($"Auth: Refreshing token for '{resource}'.");
                 // get a new token
                 token = await RawGetTokenAsync(resource);
                 // update the token in cache
@@ -66,7 +66,7 @@ namespace SureStacks.O365Logs2LA
 
         public async Task InvalidateToken(string resource = "manage.office.com")
         {
-            _logger.LogInformation($"Invalidating token for '{resource}'.");
+            _logger.LogInformation($"Auth: Invalidating token for '{resource}'.");
             // remove the token from cache
             _tokenCache.Remove(resource);
             // get a new token for the resource but don' block to wait for it

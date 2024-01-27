@@ -30,7 +30,7 @@ namespace SureStacks.O365Logs2LA {
             // check that log analytics workspace id is not empty
             if (string.IsNullOrEmpty(logAnalyticsWorkspace))
             {
-                _logger.LogError("LogAnalyticsWorkspace environment variable is empty.");
+                _logger.LogInformation("LA: /!\\ LogAnalyticsWorkspace environment variable is empty.");
                 throw new Exception("LogAnalyticsWorkspace environment variable is empty.");
             }
             _logAnalyticsUrl = $"https://{logAnalyticsWorkspace}.ods.opinsights.azure.com/api/logs?api-version=2016-04-01";
@@ -38,7 +38,7 @@ namespace SureStacks.O365Logs2LA {
 
         public async Task SendLogs(List<dynamic> logs, string contentType)
         {
-            _logger.LogInformation($"Sending {logs.Count} logs to Log Analytics.");
+            _logger.LogInformation($"LA: Sending {logs.Count} logs to Log Analytics.");
 
             // get token
             string token = await _tokenService.GetToken("monitor.azure.com");
@@ -60,7 +60,7 @@ namespace SureStacks.O365Logs2LA {
                 if (response.StatusCode == HttpStatusCode.Unauthorized) {
                     await _tokenService.InvalidateToken("monitor.azure.com").ConfigureAwait(false);
                 }
-                _logger.LogError($"Failed to send log. Status code: {response.StatusCode}");
+                _logger.LogInformation($"LA: /!\\ Failed to send log. Status code: {response.StatusCode}");
                 throw new Exception($"Failed to send log. Status code: {response.StatusCode}");
             }
         }

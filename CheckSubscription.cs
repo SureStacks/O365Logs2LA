@@ -23,8 +23,8 @@ namespace SureStacks.O365Logs2LA
             // check that logTypes is not empty
             if (string.IsNullOrEmpty(logTypes))
             {
-                _logger.LogError("LogTypes environment variable is empty.");
-                throw new Exception("LogTypes environment variable is empty.");
+                _logger.LogError("Check: LogTypes environment variable is empty.");
+                throw new Exception("Check: LogTypes environment variable is empty.");
             }
             // split logTypes into a list
             var logTypesList = logTypes.Split(",").ToList();
@@ -58,7 +58,7 @@ namespace SureStacks.O365Logs2LA
 
         public async Task<List<Subscription>> CheckSubscriptionFunc()
         {
-            _logger.LogInformation($"Checking Subscriptions.");
+            _logger.LogInformation($"Check: Checking Subscriptions.");
 
             // initialize subscriptions
             var newSubscriptions = new List<Subscription>();
@@ -74,7 +74,7 @@ namespace SureStacks.O365Logs2LA
                 // if there is no subscription for the log type create one
                 if ((subscription is null) || (string.Compare(subscription.Status,"enabled",true) != 0))
                 {
-                    _logger.LogInformation($"Subscribing to {logType}");
+                    _logger.LogInformation($"Check: Subscribing to {logType}");
                     newSubscriptions.Add(await _office365ManagementApiService.StartSubscription(logType));
                 }
             }
@@ -91,12 +91,12 @@ namespace SureStacks.O365Logs2LA
             
             if (myTimer.ScheduleStatus is not null)
             {
-                _logger.LogInformation($"Next SubscriptionCheck at: {myTimer.ScheduleStatus.Next}");
+                _logger.LogInformation($"Check: Next SubscriptionCheck at: {myTimer.ScheduleStatus.Next}");
             }
         }
 
         [Function("Subscribe")]
-        public async Task<HttpResponseData> Subscribe([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+        public async Task<HttpResponseData> Subscribe([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "subscribe")] HttpRequestData req)
         {
             // get new subscriptions
             var newSubscriptions = await CheckSubscriptionFunc();

@@ -36,18 +36,18 @@ namespace SureStacks.O365Logs2LA
         [Function("Content")]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "content")] HttpRequestData req)
         {
-            _logger.LogInformation("Subscription Content Webhook.");
+            _logger.LogInformation("Content: Subscription Content Webhook.");
 
             // if there is a validation code this is a webhook validation
             if (req.Headers.TryGetValues("Webhook-ValidationCode", out var validationCodes))
             {
-                _logger.LogInformation("Webhook validation request.");
+                _logger.LogInformation("Content: Webhook validation request.");
                 var validationCode = validationCodes.First();
             
                 // check that validation code is not empty
                 if (string.IsNullOrEmpty(validationCode))
                 {
-                    _logger.LogError("Webhook-ValidationCode header is empty.");
+                    _logger.LogInformation("Content: /!\\ Webhook-ValidationCode header is empty.");
                     return req.CreateResponse(HttpStatusCode.BadRequest);
                 }
                 // get validation code from post body json
@@ -56,46 +56,46 @@ namespace SureStacks.O365Logs2LA
                 // check that validation codes match
                 if (validationCode != subscriptionValidation?.ValidationCode)
                 {
-                    _logger.LogError("Validation codes do not match.");
+                    _logger.LogInformation("Content: /!\\ Validation codes do not match.");
                     return req.CreateResponse(HttpStatusCode.BadRequest);
                 }
 
                 // log webhook validation passed
-                _logger.LogInformation("Webhook validation passed.");
+                _logger.LogInformation("Content: Webhook validation passed.");
                 return req.CreateResponse(HttpStatusCode.OK);
             }
 
             // if there is no validation code this is a content notification
-            _logger.LogInformation("Content notification request.");
+            _logger.LogInformation("Content: Content notification request.");
             var content = await req.ReadFromJsonAsync<List<Content>>();
 
             // check that content is not empty
             if (content is null)
             {
-                _logger.LogError("Content is empty.");
+                _logger.LogInformation("Content: /!\\ Content is empty.");
                 return req.CreateResponse(HttpStatusCode.BadRequest);
             }
 
             // log content notification with count of content and their content types
-            _logger.LogInformation($"Content notification with {content.Count} content(s) received.");
+            _logger.LogInformation($"Content: Content notification with {content.Count} content(s) received.");
 
             // use office management api service to retrieve and send logs to log analytics for each content in parallel
             try {
                 await Task.WhenAll(content.Select(async c =>
                 {
-                    _logger.LogInformation($"Retrieving logs for content {c.ContentId}.");
+                    _logger.LogInformation($"Content: Retrieving logs for content {c.ContentId}.");
                     var logs = await _office365ManagementApiService.RetrieveLogs(c.ContentId);
-                    _logger.LogInformation($"Sending logs for content {c.ContentId} to log analytics.");
+                    _logger.LogInformation($"Content: Sending logs for content {c.ContentId} to log analytics.");
                     await _logAnalyticsService.SendLogs(logs, c.ContentType);
-                    _logger.LogInformation($"Logs for content {c.ContentId} sent to log analytics.");
+                    _logger.LogInformation($"Content: Logs for content {c.ContentId} sent to log analytics.");
                 }));
             } catch (Exception e) {
-                _logger.LogError(e, "Error sending logs to log analytics.");
+                _logger.LogInformation($"Content: /!\\ Error sending logs to log analytics: {e.Message}");
                 return req.CreateResponse(HttpStatusCode.InternalServerError);
             }
 
             // log content notification processed
-            _logger.LogInformation("Content notification processed.");
+            _logger.LogInformation("Content: Content notification processed.");
             return req.CreateResponse(HttpStatusCode.OK);
         }
     }

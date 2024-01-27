@@ -26,14 +26,14 @@ namespace SureStacks.O365Logs2LA
         [Function("Subscriptions")]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "subscriptions")] HttpRequestData req)
         {
-            _logger.LogInformation("Getting Subscriptions.");
+            _logger.LogInformation("Get: Getting Subscriptions.");
 
             var subscriptions = await _office365ManagementApiService.GetSubscriptions();
 
             // check that subscriptions is not empty
             if (subscriptions == null)
             {
-                _logger.LogError("Subscriptions is empty.");
+                _logger.LogInformation("Get: /!\\ Subscriptions is empty.");
                 return req.CreateResponse(HttpStatusCode.NotFound);
             }
 
