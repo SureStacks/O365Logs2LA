@@ -1,5 +1,9 @@
 # O365Logs2LA
 
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FSureStacks2FO365Logs2LA%2Fmaster%2Fazuredeploy.json)
+
+
+
 Send Office 365 unified logs to log analytics with .Net and Managed Identities and optimize resources and security.
 
 There are already available samples and connectors to send Office 365 Unifed Logs to Log Analytics/Sentinel:
@@ -44,9 +48,8 @@ The permissions needed for the managed identity are:
 
  * Office 365 Management APIs
    * ActivityFeed.Read
-   * ActivityFeed.ReadDlp
  * Log Analytics Workspace
-   * Log Analytics Contributor
+   * Access the secret in the "Key Vault" holding the shared key
 
 ## Granting Permissions to Office 365 Management APIs via PowerShell
 
