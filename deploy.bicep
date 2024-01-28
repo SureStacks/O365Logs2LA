@@ -93,6 +93,10 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
           value: applicationInsights.properties.InstrumentationKey
         }
         {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+        {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'dotnet-isolated'
         }
@@ -111,7 +115,18 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
       ]
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
+      netFrameworkVersion: 'v8.0'
+      use32BitWorkerProcess: false
+      scmType: 'None'
     }
+  }
+}
+
+resource functionAppZipDeploy 'Microsoft.Web/sites/extensions@2021-02-01' = {
+  parent: functionApp
+  name: 'MSDeploy'
+  properties: { 
+    packageUri: '<public URL of the zip file>'
   }
 }
 
@@ -119,7 +134,6 @@ resource keyvaultSecretUser 'Microsoft.Authorization/roleDefinitions@2015-07-01'
   scope: tenant()
   name: '4633458b-17de-408a-b874-0445c86b69e6'
 }
-
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   name: guid('myRoleAssignment')
