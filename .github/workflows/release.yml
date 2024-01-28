@@ -23,7 +23,7 @@ jobs:
           run: |
             dotnet publish -c Release -o ./publish
         - name: Zip
-          run: 
+          run: |
             cd publish
             version=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
             zip -r ../O365Logs2LA-$version.zip .
