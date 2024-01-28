@@ -126,7 +126,7 @@ resource functionAppZipDeploy 'Microsoft.Web/sites/extensions@2021-02-01' = {
   parent: functionApp
   name: 'MSDeploy'
   properties: { 
-    packageUri: '<public URL of the zip file>'
+    packageUri: 'https://github.com/SureStacks/O365Logs2LA/releases/download/v1.0.0/O365Logs2LA-v1.0.0.zip'
   }
 }
 

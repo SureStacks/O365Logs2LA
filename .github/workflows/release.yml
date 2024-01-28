@@ -11,7 +11,7 @@ permissions:
     contents: write
 
 jobs:
-    build:
+    Release:
         runs-on: ubuntu-latest
         steps:      
         - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
