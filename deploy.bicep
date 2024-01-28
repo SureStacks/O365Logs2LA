@@ -4,9 +4,10 @@ param location string = resourceGroup().location
 var keyVaultName = '${UnifiedLogingName}-kv'
 var logAnalyticsName = '${UnifiedLogingName}-la'
 var functionAppName = '${UnifiedLogingName}-fn'
-var storageAccountName = '${UnifiedLogingName}sa'
+var storageAccountName = toLower('${UnifiedLogingName}${substring(uniqueString(resourceGroup().id),0,3)}sa')
 var hostingPlanName = '${UnifiedLogingName}-plan'
 var applicationInsightsName = '${UnifiedLogingName}-ai'
+var secretName = '${toLower(UnifiedLogingName)}-lakey'
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   name: keyVaultName
@@ -17,6 +18,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
       family: 'A'
     }
     tenantId: subscription().tenantId
+    enableRbacAuthorization: true
   }
 }
 
@@ -96,7 +98,7 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
         }
         {
           name: 'LogAnalyticsWorkspaceKey'
-          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=o365logs2la_lakey)'
+          value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${secretName})'
         }
         {
           name: 'LogAnalyticsWorkspace'
@@ -113,28 +115,25 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
   }
 }
 
-resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-  parent: keyVault
-  name: 'o365logs2la_lakey'
+resource keyvaultSecretUser 'Microsoft.Authorization/roleDefinitions@2015-07-01' existing = {
+  scope: tenant()
+  name: '4633458b-17de-408a-b874-0445c86b69e6'
+}
+
+
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('myRoleAssignment')
+  scope: keyVault
   properties: {
-    value: logAnalytics.listSharedKeys().primarySharedKey
+    principalId: functionApp.identity.principalId
+    roleDefinitionId: keyvaultSecretUser.id
   }
 }
 
-resource keyVaultAccessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2022-07-01' = {
+resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
   parent: keyVault
-  name: 'add'
+  name: secretName
   properties: {
-    accessPolicies: [
-      {
-        tenantId: subscription().tenantId
-        objectId: functionApp.identity.principalId
-        permissions: {
-          secrets: [
-            'get'
-          ]
-        }
-      }
-    ]
+    value: logAnalytics.listKeys().primarySharedKey
   }
 }

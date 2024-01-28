@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.24.24.22086",
-      "templateHash": "3890612489703634622"
+      "templateHash": "3738759787348765965"
     }
   },
   "parameters": {
@@ -21,9 +21,10 @@
     "keyVaultName": "[format('{0}-kv', parameters('UnifiedLogingName'))]",
     "logAnalyticsName": "[format('{0}-la', parameters('UnifiedLogingName'))]",
     "functionAppName": "[format('{0}-fn', parameters('UnifiedLogingName'))]",
-    "storageAccountName": "[format('{0}sa', parameters('UnifiedLogingName'))]",
+    "storageAccountName": "[toLower(format('{0}{1}sa', parameters('UnifiedLogingName'), substring(uniqueString(resourceGroup().id), 0, 3)))]",
     "hostingPlanName": "[format('{0}-plan', parameters('UnifiedLogingName'))]",
-    "applicationInsightsName": "[format('{0}-ai', parameters('UnifiedLogingName'))]"
+    "applicationInsightsName": "[format('{0}-ai', parameters('UnifiedLogingName'))]",
+    "secretName": "[format('{0}-lakey', toLower(parameters('UnifiedLogingName')))]"
   },
   "resources": [
     {
@@ -36,7 +37,8 @@
           "name": "standard",
           "family": "A"
         },
-        "tenantId": "[subscription().tenantId]"
+        "tenantId": "[subscription().tenantId]",
+        "enableRbacAuthorization": true
       }
     },
     {
@@ -121,7 +123,7 @@
             },
             {
               "name": "LogAnalyticsWorkspaceKey",
-              "value": "[format('@Microsoft.KeyVault(VaultName={0};SecretName=o365logs2la_lakey)', variables('keyVaultName'))]"
+              "value": "[format('@Microsoft.KeyVault(VaultName={0};SecretName={1})', variables('keyVaultName'), variables('secretName'))]"
             },
             {
               "name": "LogAnalyticsWorkspace",
@@ -144,37 +146,29 @@
       ]
     },
     {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2020-04-01-preview",
+      "scope": "[format('Microsoft.KeyVault/vaults/{0}', variables('keyVaultName'))]",
+      "name": "[guid('myRoleAssignment')]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppName')), '2020-12-01', 'full').identity.principalId]",
+        "roleDefinitionId": "[tenantResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ]
+    },
+    {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2022-07-01",
-      "name": "[format('{0}/{1}', variables('keyVaultName'), 'o365logs2la_lakey')]",
+      "name": "[format('{0}/{1}', variables('keyVaultName'), variables('secretName'))]",
       "properties": {
         "value": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName')), '2022-10-01').primarySharedKey]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.KeyVault/vaults/accessPolicies",
-      "apiVersion": "2022-07-01",
-      "name": "[format('{0}/{1}', variables('keyVaultName'), 'add')]",
-      "properties": {
-        "accessPolicies": [
-          {
-            "tenantId": "[subscription().tenantId]",
-            "objectId": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppName')), '2020-12-01', 'full').identity.principalId]",
-            "permissions": {
-              "secrets": [
-                "get"
-              ]
-            }
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
-        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
       ]
     }
   ]
