@@ -75,3 +75,24 @@ $Permissions | ForEach-Object {
      New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $ServicePrincipal.Id -AppRoleId $_.Id -PrincipalId $ServicePrincipal.Id -ResourceId $Office365API.Id
 }
 ```
+
+## Sample query to list Sensitivity Label downgrades
+
+This query will require to receive the following content types:
+* Audit.General
+* Audit.SharePoint
+
+They should cover modifications made in Office desktop, SharePoint and OneDrive (Office on the web).
+
+> ℹ️ This has currenty been tested with OneDrive and Word desktop.
+
+```KQL
+Audit_SharePoint_CL 
+| where SensitivityLabelEventData_LabelEventType_d == 2 
+| project TimeGenerated, Workload=Workload_s, Application=AppAccessContext_ClientAppName_s, ClientIP=ClientIP_s, FileID=ObjectId_s, OldLabel=SensitivityLabelEventData_OldSensitivityLabelId_g, NewLabel=SensitivityLabelEventData_SensitivityLabelId_g, Justification=SensitivityLabelJustificationText_s
+| union (
+    Audit_General_CL
+    | where SensitivityLabelEventData_LabelEventType_d == 2
+    | project TimeGenerated, Workload=Workload_s, Application=Application_s, ClientIP=ClientIP_s, FileID=ObjectId_s, OldLabel = SensitivityLabelEventData_OldSensitivityLabelId_g, NewLabel = SensitivityLabelEventData_SensitivityLabelId_g, Justification=SensitivityLabelEventData_JustificationText_s
+)
+```
