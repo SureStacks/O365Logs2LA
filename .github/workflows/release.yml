@@ -21,10 +21,10 @@ jobs:
         - uses: actions/checkout@v4
         - name: Build
           run: |
-            dotnet build -c Release
+            dotnet build -c Release --runtime win-x64
         - name: Publish
           run: |
-            dotnet publish -c Release -o ./publish
+            dotnet publish -c Release --runtime win-x64 -o ./publish
         - name: Zip
           run: |
             cd publish
