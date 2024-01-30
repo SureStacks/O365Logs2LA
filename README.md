@@ -61,6 +61,7 @@ If you are looking for Alerts many of the underlying tools have already some ale
 Having the logs can already be enabled via other tools and samples from Microsoft (mentioned earlier):
  * [Sentinel DataConnector for O365](https://github.com/Azure/Azure-Sentinel/blob/master/DataConnectors/O365%20Data/readme.md)
  * [Sample AIP Audit Export](https://github.com/Azure-Samples/Azure-Information-Protection-Samples/blob/master/AIP-Audit-Export/Export-AIPAuditLogOperations.ps1) 
+
 Both are based on PowerShell and execute on a schedule. 
 
 A rapid comparison of the different solutions:
