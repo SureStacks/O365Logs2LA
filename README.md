@@ -8,7 +8,7 @@ Send Office 365 unified logs to log analytics with .Net and Managed Identities a
 
 There are already available samples and connectors to send Office 365 Unifed Logs to Log Analytics/Sentinel:
 
- * [Sentinel DataConnector for 0365](https://github.com/Azure/Azure-Sentinel/blob/master/DataConnectors/O365%20Data/readme.md)
+ * [Sentinel DataConnector for O365](https://github.com/Azure/Azure-Sentinel/blob/master/DataConnectors/O365%20Data/readme.md)
 
  * [Sample AIP Audit Export](https://github.com/Azure-Samples/Azure-Information-Protection-Samples/blob/master/AIP-Audit-Export/Export-AIPAuditLogOperations.ps1) 
  
@@ -48,8 +48,40 @@ The permissions needed for the managed identity are:
 
  * Office 365 Management APIs
    * ActivityFeed.Read
+   * *ActivityFeed.ReadDLP* (if DLP.All is needed)
  * Log Analytics Workspace
    * Access the secret in the "Key Vault" holding the shared key
+
+## Other tools and Cost considerations
+
+There are already multiple solutions to have those Office 365 logs and Alerts.
+
+If you are looking for Alerts many of the underlying tools have already some alerting possibilities like Azure Information Protection. Neverthe less having a those logs in log analytics will provide a more focused view and allow Alarm to be tied to a more refined query (i.e. Alerts may be limited to updated sensitivy lable where a query will allow spotting sensitibitiy label downgrade).
+
+Having the logs can already be enabled via other tools and samples from Microsoft (mentioned earlier):
+ * [Sentinel DataConnector for O365](https://github.com/Azure/Azure-Sentinel/blob/master/DataConnectors/O365%20Data/readme.md)
+ * [Sample AIP Audit Export](https://github.com/Azure-Samples/Azure-Information-Protection-Samples/blob/master/AIP-Audit-Export/Export-AIPAuditLogOperations.ps1) 
+Both are based on PowerShell and execute on a schedule. 
+
+A rapid comparison of the different solutions:
+
+| **Solution** | **Platform** | **Schedule** | **Logs Supported** | **Price Consideration** |
+| --- | --- | --- |  --- |  --- |  
+ Sentinel Connector| N/A | N/A | Audit.AzureActiveDirectory, Audit.SharePoint, Audit.Exchange | Ingested Logs (GB/day - reductions for E5 customers) + Retention |
+ Sentinel DataConnector for O365 | PowerShell | Every 5 minutes | All | Ingested Logs (GB/day - first 5GB/month free) + Retention |
+ | Sample AIP Audit Export | PowerShell | Every 5 minutes | AIP Audit | Ingested Logs (GB/day - first 5GB/month free) + Retention |
+ | O365Logs2LA | .net core | WebHook | All | Ingested Logs (GB/day - first 5GB/month free) + Retention |
+
+ For more information on logs exposed by Office 365 Management API that are used by Sentinel connectors and thise project:
+
+| **Log Type** | **Descroption** |
+| --- | --- |
+| Audit.AzureActiveDirectory | Azure Active Directory logs that’s relates to Office 365 only |
+| Audit.Exchange | User and Admin Activities in Exchange Online |
+| Audit.SharePoint | User and Admin Activities in SharePoint Online |
+| Audit.General | Includes all other workloads not included in the previous content types	|
+| DLP.All | DLP events only for all workloads |
+
 
 ## Granting Permissions to Office 365 Management APIs via PowerShell
 
