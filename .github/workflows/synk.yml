@@ -1,5 +1,10 @@
 name: Snyk
-on: push
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - '**/*.cs'
 env:
     DOTNET_VERSION: '8.0.x' # set this to the dotnet version to use
 jobs:
