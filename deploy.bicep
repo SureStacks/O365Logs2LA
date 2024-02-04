@@ -1,3 +1,4 @@
+@minLength(5)
 param UnifiedLogingName string
 param location string = resourceGroup().location
 
@@ -38,11 +39,14 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: hostingPlanName
   location: location
+  kind: 'linux'
   sku: {
     name: 'Y1'
     tier: 'Dynamic'
   }
-  properties: {}
+  properties: {
+    reserved: true
+  }
 }
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
@@ -94,7 +98,7 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
+          value: 'https://github.com/SureStacks/O365Logs2LA/releases/download/v1.0.0/O365Logs2LA-v1.0.0.zip'
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
@@ -113,6 +117,7 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
           value: 'Audit.General,Audit.SharePoint'
         }
       ]
+      linuxFxVersion: 'DOTNET-ISOLATED|8.0'
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
       netFrameworkVersion: 'v8.0'
@@ -122,12 +127,21 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
   }
 }
 
-resource functionAppZipDeploy 'Microsoft.Web/sites/extensions@2021-02-01' = {
-  parent: functionApp
-  name: 'MSDeploy'
-  properties: { 
-    packageUri: 'https://github.com/SureStacks/O365Logs2LA/releases/download/v1.0.0/O365Logs2LA-v1.0.0.zip'
+
+// deployment script to wait 1 minute for the function app to be ready
+resource functionAppDeploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+  name: 'wait-for-function-app'
+  location: location
+  kind: 'AzurePowerShell'
+  properties: {
+    azPowerShellVersion: '7.0'
+    scriptContent: 'start-sleep -s 60'
+    retentionInterval: 'PT1H'
+    cleanupPreference: 'Always'
   }
+  dependsOn: [
+    functionApp
+  ]
 }
 
 resource keyvaultSecretUser 'Microsoft.Authorization/roleDefinitions@2015-07-01' existing = {
