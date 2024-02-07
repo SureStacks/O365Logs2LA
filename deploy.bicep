@@ -127,23 +127,6 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
   }
 }
 
-
-// deployment script to wait 1 minute for the function app to be ready
-resource functionAppDeploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: 'wait-for-function-app'
-  location: location
-  kind: 'AzurePowerShell'
-  properties: {
-    azPowerShellVersion: '7.0'
-    scriptContent: 'start-sleep -s 60'
-    retentionInterval: 'PT1H'
-    cleanupPreference: 'Always'
-  }
-  dependsOn: [
-    functionApp
-  ]
-}
-
 resource keyvaultSecretUser 'Microsoft.Authorization/roleDefinitions@2015-07-01' existing = {
   scope: tenant()
   name: '4633458b-17de-408a-b874-0445c86b69e6'
