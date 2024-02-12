@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.24.24.22086",
-      "templateHash": "2007211758124009999"
+      "version": "0.25.53.49325",
+      "templateHash": "16859210992042873633"
     }
   },
   "parameters": {
@@ -102,6 +102,10 @@
         "siteConfig": {
           "appSettings": [
             {
+              "name": "AzureWebJobsDashboard",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-05-01').keys[0].value)]"
+            },
+            {
               "name": "AzureWebJobsStorage",
               "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-05-01').keys[0].value)]"
             },
@@ -122,10 +126,6 @@
               "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2020-02-02').InstrumentationKey]"
             },
             {
-              "name": "WEBSITE_RUN_FROM_PACKAGE",
-              "value": "https://github.com/SureStacks/O365Logs2LA/releases/download/v1.0.0/O365Logs2LA-v1.0.0.zip"
-            },
-            {
               "name": "FUNCTIONS_WORKER_RUNTIME",
               "value": "dotnet-isolated"
             },
@@ -140,6 +140,10 @@
             {
               "name": "LogTypes",
               "value": "Audit.General,Audit.SharePoint"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "https://github.com/SureStacks/O365Logs2LA/releases/download/v1.0.0/O365Logs2LA-v1.0.0.zip"
             }
           ],
           "linuxFxVersion": "DOTNET-ISOLATED|8.0",
@@ -155,22 +159,6 @@
         "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
         "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
-      "name": "wait-for-function-app",
-      "location": "[parameters('location')]",
-      "kind": "AzurePowerShell",
-      "properties": {
-        "azPowerShellVersion": "7.0",
-        "scriptContent": "start-sleep -s 60",
-        "retentionInterval": "PT1H",
-        "cleanupPreference": "Always"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
       ]
     },
     {

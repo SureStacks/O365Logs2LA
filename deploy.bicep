@@ -77,6 +77,10 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
     siteConfig: {
       appSettings: [
         {
+          name: 'AzureWebJobsDashboard'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+        {
           name: 'AzureWebJobsStorage'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
         }
@@ -97,10 +101,6 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
           value: applicationInsights.properties.InstrumentationKey
         }
         {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: 'https://github.com/SureStacks/O365Logs2LA/releases/download/v1.0.0/O365Logs2LA-v1.0.0.zip'
-        }
-        {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'dotnet-isolated'
         }
@@ -115,6 +115,10 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
         {
           name: 'LogTypes'
           value: 'Audit.General,Audit.SharePoint'
+        }
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: 'https://github.com/SureStacks/O365Logs2LA/releases/download/v1.0.0/O365Logs2LA-v1.0.0.zip'
         }
       ]
       linuxFxVersion: 'DOTNET-ISOLATED|8.0'
